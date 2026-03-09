@@ -1,5 +1,6 @@
 package at.codersbay.libraryapp;
 
+import at.codersbay.libraryapp.api.user.User;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
