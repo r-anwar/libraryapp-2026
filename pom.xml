@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>at.codersbay.libraryapp</groupId>
-    <artifactId>libraryApp</artifactId>
+    <artifactId>libraryApp-API</artifactId>
     <packaging>jar</packaging>
-    <name>libraryApp</name>
+    <name>libraryApp-API</name>
     <version>1.0</version>
 
     <parent>

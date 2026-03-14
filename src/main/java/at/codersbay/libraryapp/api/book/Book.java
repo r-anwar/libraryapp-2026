@@ -1,10 +1,13 @@
 package at.codersbay.libraryapp.api.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "TB_BOOKS")
@@ -34,7 +37,11 @@ public class Book {
     @Column(unique = true, nullable = false)
     private String isbn;
 
-    private int amount;
+    private Integer amount;
+
+    @OneToMany(mappedBy = "book")
+    @JsonIgnore
+    private Set<Borrowed> borrowings = new HashSet<>();
 
 
     public Book() {
@@ -78,5 +85,17 @@ public class Book {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public void setAmount(Integer amount) {
+        this.amount = amount;
+    }
+
+    public Set<Borrowed> getBorrowings() {
+        return borrowings;
+    }
+
+    public void setBorrowings(Set<Borrowed> borrowings) {
+        this.borrowings = borrowings;
     }
 }

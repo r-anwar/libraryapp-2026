@@ -3,6 +3,8 @@ package at.codersbay.libraryapp.api.user;
 import at.codersbay.libraryapp.api.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,26 +19,53 @@ public class UserController {
 
 
     @PostMapping
-    public User create(User user) {
+    public ResponseEntity<ResponseBodyUser> create(User user) {
+
+        ResponseBodyUser responseBodyUser = new ResponseBodyUser();
+
+        if(StringUtils.isEmpty(user.getUserName())) {
+            responseBodyUser.setMessage("Username is required.");
+            return new ResponseEntity<>(responseBodyUser, HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<User> optionalUser = this.userRepository.findByUserName(user.getUserName());
+
+        if(optionalUser.isPresent()) {
+            responseBodyUser.setMessage("Username must be unique.");
+            return new ResponseEntity<>(responseBodyUser, HttpStatus.BAD_REQUEST);
+        }
+
         this.userRepository.save(user);
 
-        return user;
+
+        responseBodyUser.setUser(user);
+        responseBodyUser.setMessage("User created.");
+
+        return new ResponseEntity<>(responseBodyUser, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public List<User> getAll() {
-        return this.userRepository.findAll();
+    public ResponseEntity<List<User>> getAll() {
+        return new ResponseEntity<>(this.userRepository.findAll(), HttpStatus.OK);
     }
 
     @DeleteMapping
-    public void delete(@RequestParam("id") Long id) {
-        this.userRepository.deleteById(id);
+    public ResponseEntity<ResponseBody> delete(@RequestParam("id") Long id) {
+        try {
+            this.userRepository.deleteById(id);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(Throwable t) {
+            System.out.println(t);
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping
-    public ResponseBody update(User user) {
+    public ResponseEntity<ResponseBodyUser> update(User user) {
 
-        ResponseBody responseBody = new ResponseBody();
+        ResponseBodyUser responseBodyUser = new ResponseBodyUser();
 
         Optional<User> optionalUser = Optional.empty();
 
@@ -45,12 +74,13 @@ public class UserController {
         } else if (!StringUtils.isEmpty(user.getUserName())) {
             optionalUser = this.userRepository.findByUserName(user.getUserName());
         } else {
-            responseBody.setMessage("id and user name was null.");
-            return responseBody;
+            responseBodyUser.setMessage("id and user name was null.");
+            return new ResponseEntity<>(responseBodyUser, HttpStatus.BAD_REQUEST);
         }
 
         if(optionalUser.isEmpty()) {
-            responseBody.setMessage("could not find user by id or user name.");
+            responseBodyUser.setMessage("could not find user by id or user name.");
+            return new ResponseEntity<>(responseBodyUser, HttpStatus.NOT_FOUND);
         } else {
             User oldUser = optionalUser.get();
 
@@ -58,9 +88,9 @@ public class UserController {
             oldUser.setLastName(user.getLastName());
 
             this.userRepository.save(oldUser);
-            responseBody.setMessage("successfully updated.");
+            responseBodyUser.setMessage("successfully updated.");
         }
 
-        return responseBody;
+        return new ResponseEntity<>(responseBodyUser, HttpStatus.OK);
     }
 }

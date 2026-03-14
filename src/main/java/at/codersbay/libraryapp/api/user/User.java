@@ -1,8 +1,15 @@
 package at.codersbay.libraryapp.api.user;
 
+import at.codersbay.libraryapp.api.book.Book;
+import at.codersbay.libraryapp.api.book.Borrowed;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "TB_USERS")
@@ -27,6 +34,9 @@ public class User {
     private String firstName;
     private String lastName;
 
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private Set<Borrowed> borrowings = new HashSet<>();
 
     public User() {
     }
@@ -61,5 +71,13 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public Set<Borrowed> getBorrowings() {
+        return borrowings;
+    }
+
+    public void setBorrowings(Set<Borrowed> borrowings) {
+        this.borrowings = borrowings;
     }
 }
