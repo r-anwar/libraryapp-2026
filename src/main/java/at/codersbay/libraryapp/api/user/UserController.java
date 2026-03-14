@@ -1,6 +1,7 @@
 package at.codersbay.libraryapp.api.user;
 
 import at.codersbay.libraryapp.api.ResponseBody;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,8 +33,6 @@ public class UserController {
         this.userRepository.deleteById(id);
     }
 
-    // id = -9999
-
     @PutMapping
     public ResponseBody update(User user) {
 
@@ -43,17 +42,16 @@ public class UserController {
 
         if(user.getId() != null) {
             optionalUser = this.userRepository.findById(user.getId());
-        } else if (user.getUserName() != null) {
+        } else if (!StringUtils.isEmpty(user.getUserName())) {
             optionalUser = this.userRepository.findByUserName(user.getUserName());
         } else {
             responseBody.setMessage("id and user name was null.");
+            return responseBody;
         }
 
         if(optionalUser.isEmpty()) {
             responseBody.setMessage("could not find user by id or user name.");
-        }
-
-        if(optionalUser.isPresent()) {
+        } else {
             User oldUser = optionalUser.get();
 
             oldUser.setFirstName(user.getFirstName());
