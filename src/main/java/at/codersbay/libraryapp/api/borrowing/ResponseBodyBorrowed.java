@@ -1,4 +1,4 @@
-package at.codersbay.libraryapp.api.book;
+package at.codersbay.libraryapp.api.borrowing;
 
 import at.codersbay.libraryapp.api.ResponseBody;
 

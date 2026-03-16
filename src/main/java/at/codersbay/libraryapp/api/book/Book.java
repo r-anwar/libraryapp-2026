@@ -1,5 +1,6 @@
 package at.codersbay.libraryapp.api.book;
 
+import at.codersbay.libraryapp.api.borrowing.Borrowed;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;

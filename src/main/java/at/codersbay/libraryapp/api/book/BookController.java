@@ -1,6 +1,9 @@
 package at.codersbay.libraryapp.api.book;
 
 import at.codersbay.libraryapp.api.ResponseBody;
+import at.codersbay.libraryapp.api.borrowing.Borrowed;
+import at.codersbay.libraryapp.api.borrowing.BorrowedRepository;
+import at.codersbay.libraryapp.api.borrowing.ResponseBodyBorrowed;
 import at.codersbay.libraryapp.api.user.User;
 import at.codersbay.libraryapp.api.user.UserRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -112,6 +115,13 @@ public class BookController {
 
         User user = optionalUser.get();
         Book book = optionalBook.get();
+
+        List<Borrowed> bookBorrowList = borrowedRepository.findByBookIdAndReturnDateIsNull(bookId);
+
+        if(bookBorrowList != null && bookBorrowList.size() >= book.getAmount()) {
+            responseBody.setMessage("All Books of isbn: '" + book.getIsbn() + "' are already borrowed.");
+            return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        }
 
         Borrowed borrowed = new Borrowed();
         borrowed.setUser(user);

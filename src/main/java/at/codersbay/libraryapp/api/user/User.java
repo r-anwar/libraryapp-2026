@@ -1,14 +1,11 @@
 package at.codersbay.libraryapp.api.user;
 
-import at.codersbay.libraryapp.api.book.Book;
-import at.codersbay.libraryapp.api.book.Borrowed;
+import at.codersbay.libraryapp.api.borrowing.Borrowed;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity

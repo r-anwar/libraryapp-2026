@@ -1,5 +1,6 @@
-package at.codersbay.libraryapp.api.book;
+package at.codersbay.libraryapp.api.borrowing;
 
+import at.codersbay.libraryapp.api.book.Book;
 import at.codersbay.libraryapp.api.user.User;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
