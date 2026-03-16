@@ -1,58 +1,47 @@
-package at.codersbay.libraryapp.api.user;
+package at.codersbay.libraryapp.api.author;
 
-import at.codersbay.libraryapp.api.borrowing.Borrowed;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import at.codersbay.libraryapp.api.book.Book;
+import at.codersbay.libraryapp.api.book.BookRepository;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "TB_USERS")
-public class User {
+@Table(name = "TB_AUTHOR")
+public class Author {
 
     @Id
-    @GeneratedValue(generator = "user-sequence-generator")
+    @GeneratedValue(generator = "author-sequence-generator")
     @GenericGenerator(
-            name = "user-sequence-generator",
+            name = "author-sequence-generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
             parameters = {
-                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "user_sequence"),
+                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "author_sequence"),
                     @org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
                     @org.hibernate.annotations.Parameter(name = "increment_size", value = "1")
             }
     )
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String userName;
-
     private String firstName;
     private String lastName;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private Set<Borrowed> borrowings = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "authors")
+    private Set<Book> books;
 
-    public User() {
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public Author() {
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -71,11 +60,11 @@ public class User {
         this.lastName = lastName;
     }
 
-    public Set<Borrowed> getBorrowings() {
-        return borrowings;
+    public Set<Book> getBooks() {
+        return books;
     }
 
-    public void setBorrowings(Set<Borrowed> borrowings) {
-        this.borrowings = borrowings;
+    public void setBooks(Set<Book> books) {
+        this.books = books;
     }
 }

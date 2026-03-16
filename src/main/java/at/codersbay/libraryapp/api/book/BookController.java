@@ -1,6 +1,8 @@
 package at.codersbay.libraryapp.api.book;
 
 import at.codersbay.libraryapp.api.ResponseBody;
+import at.codersbay.libraryapp.api.author.Author;
+import at.codersbay.libraryapp.api.author.AuthorRespository;
 import at.codersbay.libraryapp.api.borrowing.Borrowed;
 import at.codersbay.libraryapp.api.borrowing.BorrowedRepository;
 import at.codersbay.libraryapp.api.borrowing.ResponseBodyBorrowed;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,12 +29,38 @@ public class BookController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    AuthorRespository authorRepository;
+
 
     @Autowired
     BorrowedRepository borrowedRepository;
 
     @PostMapping
-    public ResponseEntity<ResponseBodyBook> create(Book book) {
+    public ResponseEntity<ResponseBodyBook> create(CreateBookDTO createBookDTO) {
+
+        Book book = new Book();
+        book.setTitle(createBookDTO.getTitle());
+        book.setAmount(createBookDTO.getAmount());
+        book.setIsbn(createBookDTO.getIsbn());
+        book.setPublishedDate(createBookDTO.getPublishedDate());
+
+        if(createBookDTO.getAuthors() != null) {
+            for(Author author : createBookDTO.getAuthors()) {
+                if(author == null) {
+                    continue;
+                }
+
+                try {
+                    this.authorRepository.save(author);
+
+                    book.getAuthors().add(author);
+                } catch(Throwable t) {
+                    System.out.println(t);
+                }
+            }
+        }
+
         this.bookRepository.save(book);
 
         return new ResponseEntity<ResponseBodyBook>(new ResponseBodyBook(book, "Successfully Created."),

@@ -1,6 +1,8 @@
 package at.codersbay.libraryapp.api.book;
 
+import at.codersbay.libraryapp.api.author.Author;
 import at.codersbay.libraryapp.api.borrowing.Borrowed;
+import at.codersbay.libraryapp.api.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -43,6 +45,15 @@ public class Book {
     @OneToMany(mappedBy = "book")
     @JsonIgnore
     private Set<Borrowed> borrowings = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "authors_books",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private Set<Author> authors = new HashSet<>();
+
 
 
     public Book() {
@@ -98,5 +109,13 @@ public class Book {
 
     public void setBorrowings(Set<Borrowed> borrowings) {
         this.borrowings = borrowings;
+    }
+
+    public Set<Author> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(Set<Author> authors) {
+        this.authors = authors;
     }
 }
