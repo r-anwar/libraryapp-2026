@@ -4,6 +4,12 @@ public class ResponseBody {
 
     public String message;
 
+    public ResponseBody() {}
+
+    public ResponseBody(String message) {
+        this.message = message;
+    }
+
     public String getMessage() {
         return message;
     }
