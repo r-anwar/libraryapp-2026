@@ -32,6 +32,11 @@ public class User {
     private String firstName;
     private String lastName;
 
+    private String password;
+
+    @Column(nullable = false)
+    private String role = "USER";
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private Set<Borrowed> borrowings = new HashSet<>();
@@ -77,5 +82,21 @@ public class User {
 
     public void setBorrowings(Set<Borrowed> borrowings) {
         this.borrowings = borrowings;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

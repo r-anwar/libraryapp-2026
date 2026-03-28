@@ -1,207 +1,121 @@
 package at.codersbay.libraryapp.api.book;
 
-import at.codersbay.libraryapp.api.ResponseBody;
 import at.codersbay.libraryapp.api.author.Author;
-import at.codersbay.libraryapp.api.author.AuthorRespository;
 import at.codersbay.libraryapp.api.borrowing.Borrowed;
-import at.codersbay.libraryapp.api.borrowing.BorrowedRepository;
-import at.codersbay.libraryapp.api.borrowing.ResponseBodyBorrowed;
-import at.codersbay.libraryapp.api.user.User;
-import at.codersbay.libraryapp.api.user.UserRepository;
-import org.apache.commons.lang3.StringUtils;
+import at.codersbay.libraryapp.api.borrowing.BorrowingService;
+import at.codersbay.libraryapp.api.dto.LibraryMapper;
+import at.codersbay.libraryapp.api.dto.request.CreateBookRequestDTO;
+import at.codersbay.libraryapp.api.dto.request.UpdateBookRequestDTO;
+import at.codersbay.libraryapp.api.dto.response.BookResponseDTO;
+import at.codersbay.libraryapp.api.dto.response.BorrowedResponseDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/book")
+@Tag(name = "Book", description = "Book management endpoints")
 public class BookController {
 
     @Autowired
-    BookRepository bookRepository;
+    private BookService bookService;
 
     @Autowired
-    UserRepository userRepository;
+    private BorrowingService borrowingService;
 
     @Autowired
-    AuthorRespository authorRepository;
+    private LibraryMapper mapper;
 
-
-    @Autowired
-    BorrowedRepository borrowedRepository;
-
+    @Operation(summary = "Create a new book", description = "Creates a new book with optional authors. ISBN must be a valid ISBN-13.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Book created successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error (missing fields or invalid ISBN)"),
+            @ApiResponse(responseCode = "409", description = "Book with this ISBN already exists")
+    })
     @PostMapping
-    public ResponseEntity<ResponseBodyBook> create(CreateBookDTO createBookDTO) {
-
-        Book book = new Book();
-        book.setTitle(createBookDTO.getTitle());
-        book.setAmount(createBookDTO.getAmount());
-        book.setIsbn(createBookDTO.getIsbn());
-        book.setPublishedDate(createBookDTO.getPublishedDate());
-
-        if(createBookDTO.getAuthors() != null) {
-            for(Author author : createBookDTO.getAuthors()) {
-                if(author == null) {
-                    continue;
-                }
-
-                try {
-                    this.authorRepository.save(author);
-
-                    book.getAuthors().add(author);
-                } catch(Throwable t) {
-                    System.out.println(t);
-                }
-            }
+    public ResponseEntity<BookResponseDTO> create(@RequestBody @Valid CreateBookRequestDTO dto) {
+        Book book = mapper.toBook(dto);
+        List<Author> authors = null;
+        if (dto.getAuthors() != null) {
+            authors = dto.getAuthors().stream()
+                    .map(mapper::toAuthor)
+                    .collect(Collectors.toList());
         }
-
-        this.bookRepository.save(book);
-
-        return new ResponseEntity<ResponseBodyBook>(new ResponseBodyBook(book, "Successfully Created."),
-                HttpStatus.CREATED);
+        Book saved = bookService.createBook(book, authors);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toBookResponseDTO(saved));
     }
 
+    @Operation(summary = "Get all books", description = "Returns a list of all books in the library.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List returned successfully")
+    })
     @GetMapping
-    public ResponseEntity<List<Book>> getAll() {
-
-        return new ResponseEntity<>(this.bookRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<BookResponseDTO>> getAll() {
+        return ResponseEntity.ok(mapper.toBookResponseDTOList(bookService.getAllBooks()));
     }
 
+    @Operation(summary = "Delete a book by ID", description = "Permanently removes a book from the library.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @DeleteMapping
-    public ResponseEntity<ResponseBody> delete(@RequestParam("id") Long id) {
-
-        try {
-            this.bookRepository.deleteById(id);
-            return new ResponseEntity<>(new ResponseBody("Book successfully deleted."), HttpStatus.OK);
-        } catch (Throwable t) {
-            System.out.println(t);
-        }
-
-        return new ResponseEntity<>(new ResponseBody("Could not delete book."), HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> delete(@RequestParam("id") Long id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Update a book", description = "Updates title, ISBN or publishedDate of an existing book. Lookup by id or isbn.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Neither id nor isbn provided, or invalid ISBN"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     @PatchMapping
-    public ResponseEntity<ResponseBodyBook> update(Book book) {
-
-        ResponseBodyBook responseBody = new ResponseBodyBook();
-
-        Optional<Book> optionalBook = Optional.empty();
-
-        String id = "";
-
-        if (book.getId() != null) {
-            optionalBook = this.bookRepository.findById(book.getId());
-        } else if (!StringUtils.isEmpty(book.getIsbn())) {
-            optionalBook = this.bookRepository.findByIsbn(book.getIsbn());
-        } else {
-            responseBody.setMessage("id and isbn was null.");
-            return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        }
-
-        if (optionalBook.isEmpty()) {
-            responseBody.setMessage("could not find book by id or isbn.");
-            return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
-        } else {
-            Book oldBook = optionalBook.get();
-
-
-            oldBook.setTitle(book.getTitle());
-            oldBook.setIsbn(book.getIsbn());
-            oldBook.setPublishedDate(book.getPublishedDate());
-
-            this.bookRepository.save(oldBook);
-            responseBody.setMessage("successfully updated.");
-        }
-
-        return new ResponseEntity<>(responseBody, HttpStatus.OK);
+    public ResponseEntity<BookResponseDTO> update(@RequestBody @Valid UpdateBookRequestDTO dto) {
+        Book updated = bookService.updateBook(dto.getId(), dto.getIsbn(), dto.getTitle(), dto.getPublishedDate());
+        return ResponseEntity.ok(mapper.toBookResponseDTO(updated));
     }
 
+    @Operation(summary = "Borrow a book", description = "Creates a borrowing record for a user and a book. Fails if all copies are already borrowed.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
+            @ApiResponse(responseCode = "404", description = "User or book not found"),
+            @ApiResponse(responseCode = "409", description = "All copies currently borrowed")
+    })
     @PostMapping("/borrow")
-    public ResponseEntity<ResponseBodyBorrowed> borrowBook(@RequestParam("userId") Long userId,
+    public ResponseEntity<BorrowedResponseDTO> borrowBook(@RequestParam("userId") Long userId,
                                                            @RequestParam("bookId") Long bookId) {
-
-        ResponseBodyBorrowed responseBody = new ResponseBodyBorrowed();
-
-        if (userId == null || bookId == null) {
-            responseBody.setMessage("UserId and BookId are required.");
-            return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<User> optionalUser = userRepository.findById(userId);
-
-        Optional<Book> optionalBook = this.bookRepository.findById(bookId);
-
-        if (optionalUser.isEmpty() || optionalBook.isEmpty()) {
-            responseBody.setMessage("Could not found user or book.");
-            return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
-        }
-
-        User user = optionalUser.get();
-        Book book = optionalBook.get();
-
-        List<Borrowed> bookBorrowList = borrowedRepository.findByBookIdAndReturnDateIsNull(bookId);
-
-        if(bookBorrowList != null && bookBorrowList.size() >= book.getAmount()) {
-            responseBody.setMessage("All Books of isbn: '" + book.getIsbn() + "' are already borrowed.");
-            return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        }
-
-        Borrowed borrowed = new Borrowed();
-        borrowed.setUser(user);
-        user.getBorrowings().add(borrowed);
-
-        borrowed.setBook(book);
-        book.getBorrowings().add(borrowed);
-
-        borrowed.setBorrowedDate(LocalDateTime.now());
-
-        this.borrowedRepository.save(borrowed);
-        responseBody.setMessage("successfully borrowed.");
-        responseBody.setBorrowed(borrowed);
-
-        return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        Borrowed borrowed = borrowingService.borrowBook(userId, bookId);
+        return ResponseEntity.ok(mapper.toBorrowedResponseDTO(borrowed));
     }
 
+    @Operation(summary = "Return a borrowed book", description = "Sets the return date on an existing borrowing record.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Book returned successfully"),
+            @ApiResponse(responseCode = "404", description = "Borrowing record not found")
+    })
     @PatchMapping("/borrow")
-    public ResponseEntity<ResponseBodyBorrowed> returnBook(@RequestParam("id") Long id) {
-
-        ResponseBodyBorrowed responseBody = new ResponseBodyBorrowed();
-
-        if (id == null) {
-            responseBody.setMessage("id is required.");
-            return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<Borrowed> optionalBorrowed = this.borrowedRepository.findById(id);
-
-        if (optionalBorrowed.isEmpty()) {
-            responseBody.setMessage("Could not found borrowed.");
-            return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
-        }
-        Borrowed borrowed = optionalBorrowed.get();
-        borrowed.setReturnDate(LocalDateTime.now());
-
-        try {
-            this.borrowedRepository.save(borrowed);
-
-            responseBody.setMessage("successfully returned.");
-            responseBody.setBorrowed(borrowed);
-            return new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch(Throwable throwable) {
-            System.out.println(throwable);
-        }
-        responseBody.setMessage("could not save borrowed return information.");
-        return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<BorrowedResponseDTO> returnBook(@RequestParam("id") Long id) {
+        Borrowed borrowed = borrowingService.returnBook(id);
+        return ResponseEntity.ok(mapper.toBorrowedResponseDTO(borrowed));
     }
 
+    @Operation(summary = "Get all borrowing records", description = "Returns all borrowing records including returned books.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List returned successfully")
+    })
     @GetMapping("/borrow")
-    public ResponseEntity<List<Borrowed>> getAllBorrowings() {
-        return new ResponseEntity<>(this.borrowedRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<BorrowedResponseDTO>> getAllBorrowings() {
+        return ResponseEntity.ok(mapper.toBorrowedResponseDTOList(borrowingService.getAllBorrowings()));
     }
 }
