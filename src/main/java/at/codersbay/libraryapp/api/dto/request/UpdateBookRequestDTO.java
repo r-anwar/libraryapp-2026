@@ -1,10 +1,12 @@
 package at.codersbay.libraryapp.api.dto.request;
 
 import at.codersbay.libraryapp.api.validation.ValidIsbn;
+import at.codersbay.libraryapp.api.validation.ValidUpdateRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
+@ValidUpdateRequest
 public class UpdateBookRequestDTO {
 
     private Long id;
