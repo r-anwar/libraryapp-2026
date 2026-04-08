@@ -1,9 +1,6 @@
 package at.codersbay.libraryapp.api.user;
 
 import at.codersbay.libraryapp.api.dto.LibraryMapper;
-import at.codersbay.libraryapp.api.dto.request.CreateUserRequestDTO;
-import at.codersbay.libraryapp.api.dto.request.UpdateUserRequestDTO;
-import at.codersbay.libraryapp.api.dto.response.UserResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

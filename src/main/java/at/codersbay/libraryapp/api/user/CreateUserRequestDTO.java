@@ -1,4 +1,4 @@
-package at.codersbay.libraryapp.api.dto.request;
+package at.codersbay.libraryapp.api.user;
 
 import javax.validation.constraints.NotBlank;
 

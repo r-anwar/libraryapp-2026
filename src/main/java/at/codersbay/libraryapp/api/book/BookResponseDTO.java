@@ -1,4 +1,6 @@
-package at.codersbay.libraryapp.api.dto.response;
+package at.codersbay.libraryapp.api.book;
+
+import at.codersbay.libraryapp.api.author.AuthorResponseDTO;
 
 import java.time.LocalDate;
 import java.util.List;

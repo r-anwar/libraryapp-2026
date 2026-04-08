@@ -1,6 +1,6 @@
 package at.codersbay.libraryapp.validation;
 
-import at.codersbay.libraryapp.api.dto.request.UpdateBookRequestDTO;
+import at.codersbay.libraryapp.api.book.UpdateBookRequestDTO;
 import at.codersbay.libraryapp.api.validation.UpdateRequestValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

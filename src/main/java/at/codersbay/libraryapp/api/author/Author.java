@@ -1,13 +1,9 @@
 package at.codersbay.libraryapp.api.author;
 
 import at.codersbay.libraryapp.api.book.Book;
-import at.codersbay.libraryapp.api.book.BookRepository;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity

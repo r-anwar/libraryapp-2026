@@ -1,4 +1,4 @@
-package at.codersbay.libraryapp.api.dto.response;
+package at.codersbay.libraryapp.api.borrowing;
 
 import java.time.LocalDateTime;
 

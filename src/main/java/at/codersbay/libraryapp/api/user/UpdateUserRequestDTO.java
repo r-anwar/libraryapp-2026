@@ -1,12 +1,11 @@
-package at.codersbay.libraryapp.api.dto.response;
+package at.codersbay.libraryapp.api.user;
 
-public class UserResponseDTO {
+public class UpdateUserRequestDTO {
 
     private Long id;
     private String userName;
     private String firstName;
     private String lastName;
-    // password field is intentionally excluded
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

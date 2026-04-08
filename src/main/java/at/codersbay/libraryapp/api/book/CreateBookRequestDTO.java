@@ -1,5 +1,6 @@
-package at.codersbay.libraryapp.api.dto.request;
+package at.codersbay.libraryapp.api.book;
 
+import at.codersbay.libraryapp.api.author.AuthorRequestDTO;
 import at.codersbay.libraryapp.api.validation.ValidIsbn;
 import org.springframework.format.annotation.DateTimeFormat;
 

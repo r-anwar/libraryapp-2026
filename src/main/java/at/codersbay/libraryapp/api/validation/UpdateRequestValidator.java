@@ -1,6 +1,6 @@
 package at.codersbay.libraryapp.api.validation;
 
-import at.codersbay.libraryapp.api.dto.request.UpdateBookRequestDTO;
+import at.codersbay.libraryapp.api.book.UpdateBookRequestDTO;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

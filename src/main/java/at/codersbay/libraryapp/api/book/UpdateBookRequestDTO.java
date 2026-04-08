@@ -1,4 +1,4 @@
-package at.codersbay.libraryapp.api.dto.request;
+package at.codersbay.libraryapp.api.book;
 
 import at.codersbay.libraryapp.api.validation.ValidIsbn;
 import at.codersbay.libraryapp.api.validation.ValidUpdateRequest;
